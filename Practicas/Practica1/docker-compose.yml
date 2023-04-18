@@ -9,7 +9,7 @@ services:
     depends_on:
       - owncloud
     environment:
-      BALANCE: leastconn
+      BALANCE: source
       OWNCLOUD_IP: 10.5.0.6
       OWNCLOUD2_IP: 10.5.0.7
       OWNCLOUD_PORT: 8080
@@ -42,8 +42,6 @@ services:
       - mysql-slave
       - redis
       - openldap
-    ports:
-      - '8081:8080'
     volumes:
       - files_owncloud:/mnt/data
     networks:
@@ -69,8 +67,6 @@ services:
       - mysql-slave
       - redis
       - openldap
-    ports:
-      - '8082:8080'
     volumes:
       - files_owncloud:/mnt/data
     networks:
@@ -83,8 +79,6 @@ services:
     restart: always
     env_file:
       - ./mysql/master/mysql_master.env
-    ports:
-      - '4406:3306'
     volumes:
       - data_mysql_master:/var/lib/mysql
       - ./mysql/master/mysql.conf.cnf:/etc/mysql/conf.d/mysql.conf.cnf
@@ -99,8 +93,6 @@ services:
       - ./mysql/slave/mysql_slave.env
     depends_on:
       - mysql-master
-    ports:
-      - '5506:3306'
     volumes:
       - data_mysql_slave:/var/lib/mysql
       - ./mysql/slave/mysql.conf.cnf:/etc/mysql/conf.d/mysql.conf.cnf
@@ -128,8 +120,6 @@ services:
       REDIS_DATABASES: 1
     volumes:
       - redis_cache:/data
-    ports:
-      - "6379:6379"
     networks:
       vncc:
         ipv4_address: 10.5.0.11
@@ -149,9 +139,6 @@ services:
       LDAP_CONFIG_ADMIN_PASSWORD: admin
       LDAP_USERS: user01,user02
       LDAP_PASSWORDS: password1,password2
-    ports:
-      - "1389:1389"
-      - "1636:1636"
     volumes:
       - openldap_data:/bitnami/openldap
     networks:
