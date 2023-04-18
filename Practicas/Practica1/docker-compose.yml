@@ -1,0 +1,181 @@
+version: '3.8'
+
+services:
+  # haproxy
+  haproxy:
+    image: haproxy:2.7
+    container_name: haproxy
+    restart: always
+    depends_on:
+      - owncloud
+    environment:
+      BALANCE: leastconn
+      OWNCLOUD_IP: 10.5.0.6
+      OWNCLOUD2_IP: 10.5.0.7
+      OWNCLOUD_PORT: 8080
+    ports:
+      - '80:80'
+    volumes:
+      - haproxy_conf:/usr/local/etc/haproxy
+      - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
+    networks:
+      vncc:
+        ipv4_address: 10.5.0.5
+  # owncloud/server
+  owncloud:
+    image: owncloud/server:10.12.0
+    container_name: owncloud
+    restart: always
+    environment:
+      OWNCLOUD_DOMAIN: localhost 
+      OWNCLOUD_DB_TYPE: mysql
+      OWNCLOUD_DB_NAME: mydb
+      OWNCLOUD_DB_USERNAME: mydb_user
+      OWNCLOUD_DB_PASSWORD: mydb_pwd
+      OWNCLOUD_DB_HOST: mysql-master
+      OWNCLOUD_ADMIN_USERNAME: user      # Usuario admin Owncloud
+      OWNCLOUD_ADMIN_PASSWORD: p4ssw0rd  # Contraseña admin Owncloud 
+      OWNCLOUD_MYSQL_UTF8MB4: true
+      OWNCLOUD_REDIS_ENABLED: true
+      OWNCLOUD_REDIS_HOST: redis
+    depends_on:
+      - mysql-slave
+      - redis
+      - openldap
+    ports:
+      - '8081:8080'
+    volumes:
+      - files_owncloud:/mnt/data
+    networks:
+      vncc:
+        ipv4_address: 10.5.0.6
+  owncloud2:
+    image: owncloud/server:10.12.0
+    container_name: owncloud2
+    restart: always
+    environment:
+      OWNCLOUD_DOMAIN: localhost 
+      OWNCLOUD_DB_TYPE: mysql
+      OWNCLOUD_DB_NAME: mydb
+      OWNCLOUD_DB_USERNAME: mydb_user
+      OWNCLOUD_DB_PASSWORD: mydb_pwd
+      OWNCLOUD_DB_HOST: mysql-master
+      OWNCLOUD_ADMIN_USERNAME: user      # Usuario admin Owncloud
+      OWNCLOUD_ADMIN_PASSWORD: p4ssw0rd  # Contraseña admin Owncloud 
+      OWNCLOUD_MYSQL_UTF8MB4: true
+      OWNCLOUD_REDIS_ENABLED: true
+      OWNCLOUD_REDIS_HOST: redis
+    depends_on:
+      - mysql-slave
+      - redis
+      - openldap
+    ports:
+      - '8082:8080'
+    volumes:
+      - files_owncloud:/mnt/data
+    networks:
+      vncc:
+        ipv4_address: 10.5.0.7
+  # mysql
+  mysql-master:
+    image: mysql:8.0
+    container_name: mysql-master
+    restart: always
+    env_file:
+      - ./mysql/master/mysql_master.env
+    ports:
+      - '4406:3306'
+    volumes:
+      - data_mysql_master:/var/lib/mysql
+      - ./mysql/master/mysql.conf.cnf:/etc/mysql/conf.d/mysql.conf.cnf
+    networks:
+      vncc:
+        ipv4_address: 10.5.0.8
+  mysql-slave:
+    image: mysql:8.0
+    container_name: mysql-slave
+    restart: always
+    env_file:
+      - ./mysql/slave/mysql_slave.env
+    depends_on:
+      - mysql-master
+    ports:
+      - '5506:3306'
+    volumes:
+      - data_mysql_slave:/var/lib/mysql
+      - ./mysql/slave/mysql.conf.cnf:/etc/mysql/conf.d/mysql.conf.cnf
+    networks:
+      vncc:
+        ipv4_address: 10.5.0.9
+  # phpmyadmin
+  phpmyadmin:
+    image: phpmyadmin:5
+    container_name: phpmyadmin
+    restart: always
+    ports:
+      - 8080:80
+    environment:
+      - PMA_ARBITRARY=1
+    networks:
+      vncc:
+        ipv4_address: 10.5.0.10
+  # redis
+  redis:
+    image: redis:7
+    container_name: redis
+    restart: always
+    environment:
+      REDIS_DATABASES: 1
+    volumes:
+      - redis_cache:/data
+    ports:
+      - "6379:6379"
+    networks:
+      vncc:
+        ipv4_address: 10.5.0.11
+  # openldap
+  openldap:
+    image: bitnami/openldap:2.5
+    container_name: openldap
+    restart: always
+    environment:
+      LDAP_ORGANISATION: example
+      LDAP_DOMAIN: example.org
+      LDAP_ROOT: dc=example,dc=org
+      LDAP_ADMIN_USERNAME: admin
+      LDAP_ADMIN_PASSWORD: admin
+      LDAP_CONFIG_ADMIN_ENABLED: true
+      LDAP_CONFIG_ADMIN_USERNAME: admin
+      LDAP_CONFIG_ADMIN_PASSWORD: admin
+      LDAP_USERS: user01,user02
+      LDAP_PASSWORDS: password1,password2
+    ports:
+      - "1389:1389"
+      - "1636:1636"
+    volumes:
+      - openldap_data:/bitnami/openldap
+    networks:
+      vncc:
+        ipv4_address: 10.5.0.12
+
+networks:
+  # vncc
+  vncc:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.5.0.0/16
+          gateway: 10.5.0.1
+volumes:
+  haproxy_conf:
+    driver: local
+  data_mysql_master:
+    driver: local
+  data_mysql_slave:
+    driver: local
+  redis_cache:
+    driver: local
+  openldap_data:
+    driver: local
+  files_owncloud:
+    driver: local
