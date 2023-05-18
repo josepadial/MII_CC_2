@@ -1,17 +1,12 @@
 # Práctica 2: Implementación del reconocimiento facial mediante funciones como servicio
 
 <!-- TOC -->
-  * [Arquitectura cloud propuesta](#arquitectura-cloud-propuesta)
-  * [Arquitectura cloud implementada](#arquitectura-cloud-implementada)
-    * [Redes](#redes)
-    * [Volúmenes](#volúmenes)
-    * [HAProxy](#haproxy)
-    * [OwnCloud](#owncloud)
-    * [MySQL](#mysql)
-    * [phpMyAdmin](#phpmyadmin)
-    * [Redis](#redis)
-    * [OpenLDAP](#openldap)
-  * [Pruebas realizadas](#pruebas-realizadas)
+* [La idea principal](#la-idea-principal)
+* [Requisitos de instalación](#requisitos-de-instalación)
+  * [Docker](#docker)
+  * [OpenFaaS](#openfaas)
+* [Creación de la nueva función](#creación-de-la-nueva-función)
+* [Pruebas realizadas](#pruebas-realizadas)
 <!-- TOC -->
 
 ## La idea principal
