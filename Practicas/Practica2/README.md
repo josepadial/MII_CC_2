@@ -26,12 +26,14 @@ Iniciar sesión en Docker mediante
 ```` commandline
 docker login
 ````
+
 ![](img/docker_login.png)
 
 ### OpenFaaS
 ```` commandline
 faas-cli login -u admin --password
 ````
+
 ![](img/faas_login.png)
 
 ## Creación de la nueva función
@@ -57,7 +59,9 @@ POST, yo he utilizado Postman pero el propio Visual Studio se puede utilizar. Te
 * **Body/RAW:** La URL de la imagen
 
 Le he pasado la siguiente imagen:
+
 ![](img/original.jpeg)
 
 Y el resultado ha sido:
+
 ![](img/resultado.png)
